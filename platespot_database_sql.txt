@@ -1,0 +1,86 @@
+CREATE DATABASE Platespot;
+GO
+
+USE Platespot;
+GO
+
+-- Users Table
+CREATE TABLE Users (
+    UserId INT IDENTITY(1,1) PRIMARY KEY,
+    Email NVARCHAR(255) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(255) NOT NULL,
+    FullName NVARCHAR(100),
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    IsActive BIT DEFAULT 1
+);
+GO
+
+-- Cafes Table
+CREATE TABLE Cafes (
+    CafeID INT IDENTITY(1,1) PRIMARY KEY,
+    CafeName NVARCHAR(255) NOT NULL,
+    Category NVARCHAR(50) NOT NULL,
+    Location NVARCHAR(255) NOT NULL,
+    Description NVARCHAR(MAX),
+    PriceRange NVARCHAR(100),
+    Specialties NVARCHAR(MAX),
+    Rating DECIMAL(3,2) DEFAULT 0.0,
+    ReviewCount INT DEFAULT 0,
+    ImageUrl NVARCHAR(500),
+    IsActive BIT DEFAULT 1,
+    CreatedAt DATETIME2 DEFAULT GETDATE()
+);
+GO
+
+-- Reviews Table
+CREATE TABLE Reviews (
+    ReviewID INT IDENTITY(1,1) PRIMARY KEY,
+    CafeID INT,
+    UserName NVARCHAR(100) NOT NULL,
+    Rating INT CHECK (Rating BETWEEN 1 AND 5),
+    Comment NVARCHAR(MAX),
+    Platform NVARCHAR(50) DEFAULT 'Platespotter',
+    Likes INT DEFAULT 0,
+    ReviewDate DATETIME2 DEFAULT GETDATE(),
+    IsActive BIT DEFAULT 1
+);
+GO
+
+-- UserFavorites Table
+CREATE TABLE UserFavorites (
+    FavoriteId INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT,
+    CafeId INT,
+    CreatedAt DATETIME2 DEFAULT GETDATE(),
+    UNIQUE (UserId, CafeId)
+);
+GO
+
+-- User Submitted Cafes Table
+CREATE TABLE UserSubmittedCafes (
+    SubmissionId INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT,
+    Name NVARCHAR(255) NOT NULL,
+    Category NVARCHAR(50) NOT NULL,
+    Location NVARCHAR(255) NOT NULL,
+    PriceRange NVARCHAR(100),
+    Description NVARCHAR(MAX),
+    Specialties NVARCHAR(MAX),
+    Status NVARCHAR(20) DEFAULT 'Pending',
+    SubmissionDate DATETIME2 DEFAULT GETDATE()
+);
+GO
+
+-- Foreign Keys
+ALTER TABLE Reviews ADD FOREIGN KEY (CafeID) REFERENCES Cafes(CafeID);
+ALTER TABLE UserFavorites ADD FOREIGN KEY (CafeId) REFERENCES Cafes(CafeID);
+ALTER TABLE UserFavorites ADD FOREIGN KEY (UserId) REFERENCES Users(UserId);
+ALTER TABLE UserSubmittedCafes ADD FOREIGN KEY (UserId) REFERENCES Users(UserId);
+GO
+
+-- Helpful Indexes (optional)
+CREATE INDEX IX_Cafes_Category ON Cafes(Category);
+CREATE INDEX IX_Reviews_CafeID ON Reviews(CafeID);
+CREATE INDEX IX_UserFavorites_UserId ON UserFavorites(UserId);
+CREATE INDEX IX_UserFavorites_CafeId ON UserFavorites(CafeId);
+GO
